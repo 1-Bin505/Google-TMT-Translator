@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "TMT Translation",
+  "version": "1.0.1",
+  "description": "Translate between English, Nepali, and Tamang using the TMT Translation API. Fast, clean, and private.",
+  "author": "TMT Translation Team",
+
+  "icons": {
+    "16":  "icons/icon16.png",
+    "32":  "icons/icon32.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16":  "icons/icon16.png",
+      "32":  "icons/icon32.png",
+      "48":  "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "TMT Translation"
+  },
+
+  "background": {
+    "service_worker": "src/background/background.js",
+    "type": "module"
+  },
+
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "activeTab",
+    "scripting"
+  ],
+
+  "host_permissions": [
+    "https://tmt.ilprl.ku.edu.np/*"
+  ],
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+
+  "commands": {
+    "open-popup": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+T",
+        "mac": "Command+Shift+T"
+      },
+      "description": "Open TMT Translation popup"
+    }
+  }
+}
