@@ -12,16 +12,14 @@
 
 const API_ENDPOINT = "https://tmt.ilprl.ku.edu.np/lang-translate";
 
-//In-memory cache 
-
+// ─── In-memory cache ──────────────────────────────────────────────────────────
 const translationCache = new Map();
 
 function cacheKey(text, src, tgt) {
   return `${src}|${tgt}|${text}`;
 }
 
-// Sentence splitter
- 
+// ─── Sentence splitter ────────────────────────────────────────────────────────
 /**
  * Split text into sentences for sentence-by-sentence translation.
  * Handles English and Devanagari sentence endings.
@@ -37,7 +35,7 @@ function splitIntoSentences(text) {
   return parts.length > 0 ? parts : [text.trim()];
 }
 
-// Core API call 
+// ─── Core API call ────────────────────────────────────────────────────────────
 /**
  * Translate a single sentence via the TMT API.
  * @param {string} sentence
@@ -68,36 +66,39 @@ async function translateSentence(sentence, srcLang, tgtLang, apiKey) {
       }),
     });
 
-    // Handle HTTP-level errors
-    if (response.status === 401) {
-      return { ok: false, error: "Invalid API key. Please check your key in Settings." };
-    }
-    if (response.status === 429) {
-      return { ok: false, error: "Rate limit exceeded. Please wait a moment and try again." };
-    }
-    if (!response.ok) {
-      return { ok: false, error: `API error: HTTP ${response.status}` };
+    // Per the API docs, always parse JSON first — the body contains the real
+    // error message even on non-200 responses (401, 400, 500).
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      return { ok: false, error: `API error: HTTP ${response.status} (no JSON body)` };
     }
 
-    const data = await response.json();
+    // BUG FIX #2 & #3:
+    // Per the API docs:
+    //   - Success: message_type === "SUCCESS"
+    //   - Error responses do NOT include message_type at all — only "message"
+    // So we check for SUCCESS explicitly; anything else is a failure.
+    if (data.message_type !== "SUCCESS") {
+      // The "message" field is always present and human-readable per the docs.
+      const reason = data.message || `HTTP ${response.status}`;
 
-    // Handle API-level failures
-    if (data.message_type === "FAIL" || !data.message_type) {
-      const reason = data.message || data.error || "Unknown API failure.";
+      // Surface auth errors clearly
+      if (response.status === 401 || reason.toLowerCase().includes("token") || reason.toLowerCase().includes("auth")) {
+        return { ok: false, error: `Invalid API key: ${reason}` };
+      }
       return { ok: false, error: `Translation failed: ${reason}` };
     }
 
-    // Extract translated text — field may vary; try common keys
-    const translated =
-      data.translated_text ??
-      data.translation ??
-      data.result ??
-      data.output ??
-      data.text ??
-      null;
+    // BUG FIX #1:
+    // Per Section 4 of the API docs, the translated text is ALWAYS in "output".
+    // No other field name is used. Previous code incorrectly prioritised
+    // "translated_text", "translation", "result" before "output".
+    const translated = data.output;
 
-    if (!translated) {
-      return { ok: false, error: "API returned success but no translation text was found." };
+    if (translated === undefined || translated === null) {
+      return { ok: false, error: "API returned SUCCESS but the 'output' field was missing." };
     }
 
     // Store in cache
@@ -113,7 +114,7 @@ async function translateSentence(sentence, srcLang, tgtLang, apiKey) {
   }
 }
 
-//Public API 
+// ─── Public API ───────────────────────────────────────────────────────────────
 /**
  * Translate a full block of text (may be multiple sentences).
  * Validates inputs, splits sentences, translates each, rejoins.
@@ -125,7 +126,7 @@ async function translateSentence(sentence, srcLang, tgtLang, apiKey) {
  * @returns {Promise<{ok: boolean, translated?: string, error?: string}>}
  */
 export async function translate(text, srcLang, tgtLang, apiKey) {
-  // Validation 
+  // ── Validation ──────────────────────────────────────────────────────────────
   if (!text || !text.trim()) {
     return { ok: false, error: "Please enter some text to translate." };
   }
@@ -139,8 +140,14 @@ export async function translate(text, srcLang, tgtLang, apiKey) {
   const sentences = splitIntoSentences(text);
   const results = [];
 
-  for (const sentence of sentences) {
-    const result = await translateSentence(sentence, srcLang, tgtLang, apiKey);
+  for (let i = 0; i < sentences.length; i++) {
+    // API docs say: "Add a short delay between requests to avoid overloading
+    // the server." Apply 150 ms between sentences (not before the first one).
+    if (i > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    }
+
+    const result = await translateSentence(sentences[i], srcLang, tgtLang, apiKey);
     if (!result.ok) return result; // Propagate first error immediately
     results.push(result.translated);
   }
@@ -155,7 +162,9 @@ export async function translate(text, srcLang, tgtLang, apiKey) {
 export async function loadApiKey() {
   return new Promise((resolve) => {
     chrome.storage.sync.get(["apiKey"], (result) => {
-      resolve(result.apiKey ?? null);
+      // Guard against empty strings that may have been stored previously
+      const key = result.apiKey;
+      resolve(key && key.trim() ? key.trim() : null);
     });
   });
 }
@@ -166,8 +175,16 @@ export async function loadApiKey() {
  * @returns {Promise<void>}
  */
 export async function saveApiKey(key) {
+  // Normalize blank/empty strings to null so loadApiKey never returns ""
+  // which would incorrectly pass the Boolean() check in updateKeyBanner.
+  const normalized = key && key.trim() ? key.trim() : null;
   return new Promise((resolve) => {
-    chrome.storage.sync.set({ apiKey: key }, resolve);
+    if (normalized === null) {
+      // Remove the key entirely from storage rather than storing an empty string
+      chrome.storage.sync.remove("apiKey", resolve);
+    } else {
+      chrome.storage.sync.set({ apiKey: normalized }, resolve);
+    }
   });
 }
 
