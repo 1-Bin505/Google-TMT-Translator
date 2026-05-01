@@ -93,7 +93,14 @@ function showSettings() {
 }
 
 btnSettings.addEventListener("click", showSettings);
-btnBack.addEventListener("click", showMain);
+btnBack.addEventListener("click", async () => {
+  // Fix 3: Re-read the key from storage on every back navigation.
+  // Without this, currentApiKey could be stale if the user saved/cleared
+  // a key and then navigated back — the banner would show the wrong state.
+  currentApiKey = await loadApiKey();
+  updateKeyBanner();
+  showMain();
+});
 bannerLink.addEventListener("click", showSettings);
 
 // ─── Language Logic ───────────────────────────────────────────────────────────
@@ -212,14 +219,6 @@ async function doTranslate() {
 
 btnTranslate.addEventListener("click", doTranslate);
 
-// Ctrl+Enter shortcut inside textarea
-inputText.addEventListener("keydown", (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-    e.preventDefault();
-    doTranslate();
-  }
-});
-
 // ─── Copy ─────────────────────────────────────────────────────────────────────
 btnCopy.addEventListener("click", async () => {
   const text = outputText.textContent;
@@ -315,11 +314,24 @@ async function prefillFromPageSelection() {
     if (result && result.length > 0 && result.length <= MAX_CHARS) {
       inputText.value = result;
       updateCharCount();
+      // Fix 2: automatically trigger translation when text was pre-filled
+      // from a page selection, so user just sees the result immediately.
+      await doTranslate();
     }
   } catch {
     // Page may not allow scripting (e.g. chrome:// pages) — silently skip
   }
 }
+
+// ─── Network Recovery (Fix 4) ─────────────────────────────────────────────────
+// When the browser comes back online after a network error, clear the stale
+// "no internet" error message so the user can try again without confusion.
+window.addEventListener("online", () => {
+  // Only clear the error if it was a network error — don't wipe unrelated errors
+  if (!outputError.hidden && outputErrorMsg.textContent.toLowerCase().includes("network")) {
+    showOutputState("empty");
+  }
+});
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 init();
