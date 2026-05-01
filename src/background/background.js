@@ -61,11 +61,4 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   return true;
 });
 
-// ─── Keyboard Shortcut Command ────────────────────────────────────────────────
-chrome.commands.onCommand.addListener((command) => {
-  if (command === "open-popup") {
-    // Opening the popup programmatically is not directly supported in MV3;
-    // the shortcut defined in manifest.json will handle this natively.
-    // This listener is kept for future extensibility.
-  }
-});
+
