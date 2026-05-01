@@ -1,1 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TMT Translation</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
 
+  <!-- ═══════════════════════════════════════════════
+       MAIN VIEW — Translation interface
+  ═══════════════════════════════════════════════ -->
+  <div id="view-main" class="view active">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-brand">
+        <span class="header-logo" aria-hidden="true">⟺</span>
+        <span class="header-title">TMT Translation</span>
+      </div>
+      <button class="icon-btn" id="btn-settings" title="Settings" aria-label="Open settings">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="currentColor"/>
+          <path fill-rule="evenodd" clip-rule="evenodd"
+            d="M6.56 1.44a.75.75 0 0 1 .72-.56h1.44a.75.75 0 0 1 .72.56l.19.74a4.5 4.5 0 0 1 .74.43l.72-.24a.75.75 0 0 1 .9.36l.72 1.24a.75.75 0 0 1-.17.95l-.59.49v.86l.59.49c.29.24.37.63.17.95l-.72 1.24a.75.75 0 0 1-.9.36l-.72-.24a4.5 4.5 0 0 1-.74.43l-.19.74a.75.75 0 0 1-.72.56H7.28a.75.75 0 0 1-.72-.56l-.19-.74a4.5 4.5 0 0 1-.74-.43l-.72.24a.75.75 0 0 1-.9-.36l-.72-1.24a.75.75 0 0 1 .17-.95l.59-.49v-.86l-.59-.49a.75.75 0 0 1-.17-.95l.72-1.24a.75.75 0 0 1 .9-.36l.72.24a4.5 4.5 0 0 1 .74-.43l.19-.74zM8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"
+            fill="currentColor" opacity="0.6"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Language Selector Bar -->
+    <div class="lang-bar">
+      <div class="lang-select-wrap">
+        <select id="sel-src" class="lang-select" aria-label="Source language">
+          <option value="en">English</option>
+          <option value="ne">Nepali</option>
+          <option value="tmg">Tamang</option>
+        </select>
+      </div>
+
+      <button class="swap-btn" id="btn-swap" title="Swap languages" aria-label="Swap source and target languages">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 5h10M10 2l3 3-3 3M13 11H3M6 8l-3 3 3 3" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="lang-select-wrap">
+        <select id="sel-tgt" class="lang-select" aria-label="Target language">
+          <option value="en">English</option>
+          <option value="ne" selected>Nepali</option>
+          <option value="tmg">Tamang</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Source Input -->
+    <div class="panel source-panel">
+      <textarea
+        id="input-text"
+        class="text-area"
+        placeholder="Enter text to translate…"
+        rows="4"
+        maxlength="2000"
+        aria-label="Text to translate"
+        spellcheck="true"
+      ></textarea>
+      <div class="panel-footer">
+        <span class="char-count" id="char-count">0 / 2000</span>
+        <button class="ghost-btn" id="btn-clear" title="Clear" aria-label="Clear input text">Clear</button>
+      </div>
+    </div>
+
+    <!-- Translate Button -->
+    <div class="action-row">
+      <button class="translate-btn" id="btn-translate" aria-label="Translate text">
+        <span class="btn-label">Translate</span>
+        <span class="btn-spinner" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <!-- Output Panel -->
+    <div class="panel output-panel" id="output-panel" aria-live="polite" aria-label="Translation result">
+      <!-- Empty state -->
+      <div class="output-empty" id="output-empty">
+        <span class="output-empty-icon">⟺</span>
+        <span>Translation will appear here</span>
+      </div>
+
+      <!-- Error state -->
+      <div class="output-error" id="output-error" hidden>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="6.25" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M7 4v3.5M7 9.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span id="output-error-msg"></span>
+      </div>
+
+      <!-- Result state -->
+      <div class="output-result" id="output-result" hidden>
+        <p class="output-text" id="output-text"></p>
+        <div class="output-actions">
+          <button class="ghost-btn small" id="btn-copy" title="Copy translation" aria-label="Copy translation to clipboard">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M9 4V2.5A1.5 1.5 0 0 0 7.5 1H2.5A1.5 1.5 0 0 0 1 2.5v5A1.5 1.5 0 0 0 2.5 9H4"
+                    stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- No-API-key notice (shown when key not set) -->
+    <div class="no-key-banner" id="no-key-banner" hidden>
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+        <circle cx="6.5" cy="6.5" r="5.75" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M6.5 3.5v3.25M6.5 8.75v.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      API key not set. <button class="inline-link" id="banner-settings-link">Add key in Settings</button>
+    </div>
+
+  </div><!-- /view-main -->
+
+
+  <!-- ═══════════════════════════════════════════════
+       SETTINGS VIEW
+  ═══════════════════════════════════════════════ -->
+  <div id="view-settings" class="view" hidden>
+
+    <header class="header">
+      <button class="icon-btn back-btn" id="btn-back" aria-label="Back to translation">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span class="header-title">Settings</span>
+    </header>
+
+    <div class="settings-body">
+
+      <!-- API Key Section -->
+      <section class="settings-section">
+        <h2 class="settings-label">API Key</h2>
+        <p class="settings-hint">
+          Your key is stored locally in your browser and never sent anywhere except the TMT API.
+        </p>
+        <div class="key-input-row">
+          <input
+            type="password"
+            id="input-api-key"
+            class="key-input"
+            placeholder="Paste your API key…"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="API key input"
+          />
+          <button class="icon-btn" id="btn-toggle-key" title="Show/hide key" aria-label="Toggle API key visibility">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true" id="eye-icon">
+              <path d="M1 7.5S3.5 3 7.5 3 14 7.5 14 7.5 11.5 12 7.5 12 1 7.5 1 7.5z"
+                    stroke="currentColor" stroke-width="1.3"/>
+              <circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.3"/>
+            </svg>
+          </button>
+        </div>
+        <button class="save-btn" id="btn-save-key">Save Key</button>
+        <span class="save-status" id="save-status" hidden>✓ Saved</span>
+      </section>
+
+      <!-- About Section -->
+      <section class="settings-section">
+        <h2 class="settings-label">About</h2>
+        <dl class="about-list">
+          <dt>Extension</dt><dd>TMT Translation v1.0.0</dd>
+          <dt>API Endpoint</dt><dd class="mono">tmt.ilprl.ku.edu.np</dd>
+          <dt>Supported</dt><dd>English · Nepali · Tamang</dd>
+          <dt>Shortcut</dt><dd>Ctrl+Shift+T (⌘+Shift+T on Mac)</dd>
+        </dl>
+      </section>
+
+      <!-- Danger Zone -->
+      <section class="settings-section">
+        <h2 class="settings-label">Data</h2>
+        <button class="ghost-btn danger" id="btn-clear-key">Remove API Key</button>
+      </section>
+
+    </div>
+  </div><!-- /view-settings -->
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>
