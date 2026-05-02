@@ -180,7 +180,7 @@ tmt-translation/
 
 ### Option 1 --- Download ZIP (Recommended)
 
-**[⬇ Download tmt-translation-extension.zip](https://claude.ai/releases/latest/download/tmt-translation-extension.zip)**
+**[⬇ Download tmt-translation-extension.zip](add link)**
 
 1.  Download and unzip the file
 2.  Open Chrome and go to `chrome://extensions`
