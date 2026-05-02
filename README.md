@@ -48,8 +48,7 @@ Features
 - Target language selector stays accessible in Reading Mode
 
 - Reading Mode preference is remembered across sessions
-- 
-
+  
 ### Language Controls
 
 -   Swap source and target languages with one click
