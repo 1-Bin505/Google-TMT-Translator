@@ -205,6 +205,9 @@ tmt-translation/
 
 > 📌 Pin the extension by clicking the puzzle piece icon → pin TMT Translation.
 
+### How to video
+https://drive.google.com/file/d/1ylPwH_LLJfPYvgTZh3o-KvXAhVA1q6Wh/view?usp=drive_link
+
 ### Option 2 --- Clone the Repository
 
 ```
