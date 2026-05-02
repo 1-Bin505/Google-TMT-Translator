@@ -35,6 +35,21 @@ Features
 -   Right-click → **"Translate with TMT"**
 -   Translation appears as a toast notification on the page
 
+### 📖 Reading Mode
+
+- Toggle Reading Mode using the book icon (📖) in the popup header
+
+- The normal input/output UI is replaced with two focused action buttons
+
+- **Translate Selection** --- reads the text currently highlighted on the page, translates it, and shows the result inside the popup with a Copy button
+
+- **Translate Page** --- walks the entire visible page content, skips navigation/footer/scripts/code, translates every text sentence in place, and reports how many sentences were replaced
+
+- Target language selector stays accessible in Reading Mode
+
+- Reading Mode preference is remembered across sessions
+- 
+
 ### Language Controls
 
 -   Swap source and target languages with one click
@@ -44,7 +59,7 @@ Features
 ### Settings
 
 -   Secure API key management via the built-in Settings panel
--   Key is stored locally in the browser --- never hardcoded
+-   Key is stored locally in the browser 
 -   Show/hide key toggle for safe entry
 
 
