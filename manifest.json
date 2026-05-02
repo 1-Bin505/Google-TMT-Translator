@@ -49,6 +49,6 @@
       "js": ["src/content/content.js"],
       "run_at": "document_idle"
     }
-  ],
+  ]
 
 }
